@@ -13,7 +13,7 @@ public interface ICurrentLocationRepository
 public class CurrentLocationRepository : ICurrentLocationRepository
 {
     private readonly CloudTable table;
-
+ 
     public CurrentLocationRepository(IOptions<AzureTableOptions> options)
     {
         var connectionString = options.Value.AzureStorageAccountConnectionString;
