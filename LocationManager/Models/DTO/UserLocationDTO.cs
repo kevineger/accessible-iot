@@ -1,5 +1,5 @@
 using System;
-using Microsoft.Azure.CosmosDB.Table;
+using Microsoft.WindowsAzure.Storage.Table;
 
 public class UserLocationDTO : TableEntity
 {

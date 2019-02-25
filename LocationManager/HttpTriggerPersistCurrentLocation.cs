@@ -40,7 +40,17 @@ namespace Azure.IoT
 
             var repo = (ICurrentLocationRepository)container.GetService(typeof(ICurrentLocationRepository));
 
-            return (ActionResult)new OkObjectResult($"Done.");
+            var res = await repo.SaveLocationAsync(userLocation);
+
+            if (res)
+            {
+                return (ActionResult)new OkObjectResult($"Done.");
+            }
+            else
+            {
+                log.LogError($"Failed to save user location. Payload: {requestBody}.");
+                return new BadRequestObjectResult("We messed up.");
+            }
         }
     }
 }
