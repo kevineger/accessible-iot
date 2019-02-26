@@ -10,6 +10,8 @@ using LocationManager.Models;
 
 public interface IAzureMapsRepository {
     Task<IEnumerable<string>> GetClosestUserIds(IEnumerable<UserLocation> helpersLocations, UserLocation userLocation);
+
+    Task<GetDirectionsResponse> GetPedestrianDirections(GPSLocation startLocation, GPSLocation endLocation);
 }
 
 public class AzureMapsRepository : IAzureMapsRepository
@@ -17,6 +19,7 @@ public class AzureMapsRepository : IAzureMapsRepository
     private string subscriptionKey;
     private static HttpClient httpClient = new HttpClient();
     private static string azureMapsGetClosestPointApi = "https://atlas.microsoft.com/spatial/closestPoint/json?subscription-key={0}&api-version=1.0&lat={1}&lon={2}&numberOfClosestPoints={3}";
+    private static string azureMapsGetPedestrianDirectionsApi = "https://atlas.microsoft.com/route/directions/json?subscription-key={0}&api-version=1.0&routeRepresentation=polyline&travelMode=pedestrian&instructionsType=tagged&query={1},{2}:{3},{4}";
 
     public AzureMapsRepository(IOptions<AzureMapsOptions> options)
     {
@@ -42,6 +45,26 @@ public class AzureMapsRepository : IAzureMapsRepository
         }
 
         return response;
+    }
+
+    public async Task<GetDirectionsResponse> GetPedestrianDirections(GPSLocation startLocation, GPSLocation endLocation)
+    {
+        GetDirectionsResponse getDirectionsResponse = null;
+        var response = Enumerable.Empty<string>();
+        var requestUrl = GetDirectionsUrl(subscriptionKey, startLocation, endLocation);
+        var (responseCode, responseBodySerialized) = await HttpClientHelper.GetAsync(requestUrl);
+
+        if (responseCode == System.Net.HttpStatusCode.OK)
+        {
+            getDirectionsResponse = JsonConvert.DeserializeObject<GetDirectionsResponse>(responseBodySerialized);
+        }
+
+        return getDirectionsResponse;
+    }
+
+    private static string GetDirectionsUrl(string subscriptionKey, GPSLocation startLocation, GPSLocation endLocation)
+    {
+        return string.Format(azureMapsGetPedestrianDirectionsApi, subscriptionKey, startLocation.gpsLat, startLocation.gpsLong, endLocation.gpsLat, endLocation.gpsLong);
     }
 
     private static string GetAzureMapsPostURLToGetClosestPoints(string subscriptionKey,

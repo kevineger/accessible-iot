@@ -47,10 +47,10 @@ namespace Azure.IoT
                 || nextStatus == System.Net.HttpStatusCode.Created
                 || nextStatus == System.Net.HttpStatusCode.Accepted)
             {
-                return (ActionResult)new OkObjectResult($"Successfully triggered the next step. Body used : {nextBodySerialized}");
+                return (ActionResult)new OkObjectResult($"Successfully triggered the next step. Push Notifications. Body used : {nextBodySerialized}");
             }
 
-            return (ActionResult)new BadRequestObjectResult($"Failed to trigger the next step. Body used : {nextBodySerialized}");
+            return (ActionResult)new BadRequestObjectResult($"Failed to trigger the next step. Push Notifications. Body used : {nextBodySerialized}");
         }
     }
 }

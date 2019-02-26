@@ -17,7 +17,7 @@ namespace FunctionApp
 {
     public static class HttpTriggerAcknowledge
     {
-        private static HttpClient httpClient = new HttpClient();
+        private static string showDirectionsPushUrl = "https://stegawhackathon.azurewebsites.net/api/Notifications";
 
         [FunctionName("HttpTriggerAcknowledge")]
         public static async Task<IActionResult> Run(
@@ -30,43 +30,31 @@ namespace FunctionApp
             var container = ContainerHelper.Build(context);
             var acknowledge = await RequestHelper.ReadAsync<Acknowledge>(req, log);
             var acknowledgeRepo = (IAcknoledgeRepository)container.GetService(typeof(IAcknoledgeRepository));
-
-
-            var azureMapsRouteCallBase = "https://atlas.microsoft.com/route/directions/json?subscription-key=7TqHJ3076KEoC-FRyx_gycYRNefYeVJdldgKomtKBfI&api-version=1.0&routeRepresentation=polyline&travelMode=pedestrian&instructionsType=tagged";
+            var mapsRepo = (IAzureMapsRepository)container.GetService(typeof(IAzureMapsRepository));
+            
             try
             {
                 var res = await acknowledgeRepo.SaveAcknowledgeAsync(acknowledge);
-                
-                // Call Azure Maps with Lat and Long of Caretaker and Individual to get the route between the two
-                var azureMapsRouteAPI = azureMapsRouteCallBase + GetRouteQueryParam(
-                    acknowledge.CareTakerLocation.gpsLat,
-                    acknowledge.CareTakerLocation.gpsLong,
-                    acknowledge.CareRecipientLocation.gpsLat,
-                    acknowledge.CareRecipientLocation.gpsLong);
-                var mapsResponse = await GetAsync(azureMapsRouteAPI).ConfigureAwait(false);
 
-                return (ActionResult)new OkObjectResult(mapsResponse);
+                var getDirectionsResponse = await mapsRepo.GetPedestrianDirections(acknowledge.CareTakerLocation, acknowledge.CareRecipientLocation);
+
+                var directionsPathAsGeoJson = getDirectionsResponse.GetRouteAsGeoJson();
+
+                var (nextStatus, nextResponseMessage) = await HttpClientHelper.PostAsync(showDirectionsPushUrl, directionsPathAsGeoJson);
+
+                if (nextStatus == System.Net.HttpStatusCode.OK
+                    || nextStatus == System.Net.HttpStatusCode.Created
+                    || nextStatus == System.Net.HttpStatusCode.Accepted)
+                {
+                    return (ActionResult)new OkObjectResult($"Successfully triggered the next step. Show Directions. Body used : {directionsPathAsGeoJson}");
+                }
+
+                return (ActionResult)new BadRequestObjectResult($"Failed to trigger the next step.S how Directions. Body used : {directionsPathAsGeoJson}");
             }
             catch (StorageException)
             {
                 return (ActionResult)new OkObjectResult("Help is already dispatched. Thank you!");
             }
-        }
-
-        private static async Task<string> GetAsync(string url)
-        {
-            var responseObject = await httpClient.GetAsync(url).ConfigureAwait(false);
-            if (responseObject.IsSuccessStatusCode)
-            {
-                return await responseObject.Content.ReadAsStringAsync().ConfigureAwait(false);
-            }
-
-            return $"Having trouble with AzureMaps. AzureMaps response Code : {responseObject.StatusCode}";
-        }
-
-        private static string GetRouteQueryParam(double startLat, double startLon, double endLat, double endLon)
-        {
-            return $"&query={startLat},{startLon}:{endLat},{endLon}";
         }
     }
 }
