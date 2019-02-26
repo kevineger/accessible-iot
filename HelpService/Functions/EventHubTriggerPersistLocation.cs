@@ -9,7 +9,7 @@ public static class EventHubTriggerPersistLocation
 {
     // [FunctionName("EventHubTriggerPersistLocation")]
     public static async System.Threading.Tasks.Task RunAsync(
-    [EventHubTrigger("stegawiothub", Connection = "EventHubConnStr", ConsumerGroup = "azurefunctionsconsumergroup-dev")] EventData eventHubMessage,
+    [EventHubTrigger("stegawiothub", Connection = "EventHubConnStr", ConsumerGroup = "EventHubConsumerGroup")] EventData eventHubMessage,
     DateTime enqueuedTimeUtc,
     Int64 sequenceNumber,
     string offset,
@@ -17,18 +17,16 @@ public static class EventHubTriggerPersistLocation
     ExecutionContext context)
     {
         log.LogInformation($"Event: {Encoding.UTF8.GetString(eventHubMessage.Body)}");
-        // // Metadata accessed by binding to EventData
-        // log.LogInformation($"EnqueuedTimeUtc={eventHubMessage.SystemProperties.EnqueuedTimeUtc}");
-        // log.LogInformation($"SequenceNumber={eventHubMessage.SystemProperties.SequenceNumber}");
-        // log.LogInformation($"Offset={eventHubMessage.SystemProperties.Offset}");
-        // // Metadata accessed by using binding expressions in method parameters
-        // log.LogInformation($"EnqueuedTimeUtc={enqueuedTimeUtc}");
-        // log.LogInformation($"SequenceNumber={sequenceNumber}");
-        // log.LogInformation($"Offset={offset}");
+        // Metadata accessed by binding to EventData
+        log.LogInformation($"EnqueuedTimeUtc={eventHubMessage.SystemProperties.EnqueuedTimeUtc}");
+        log.LogInformation($"SequenceNumber={eventHubMessage.SystemProperties.SequenceNumber}");
+        log.LogInformation($"Offset={eventHubMessage.SystemProperties.Offset}");
+        // Metadata accessed by using binding expressions in method parameters
+        log.LogInformation($"EnqueuedTimeUtc={enqueuedTimeUtc}");
+        log.LogInformation($"SequenceNumber={sequenceNumber}");
+        log.LogInformation($"Offset={offset}");
 
         // -------------
-
-        log.LogInformation("C# Event Hub trigger function processed a request.");
 
         // var container = ContainerHelper.Build(context);
         // var repo = (ICurrentLocationRepository)container.GetService(typeof(ICurrentLocationRepository));
