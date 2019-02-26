@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/bin/Debug/netcoreapp2.2/Notification.Service.dll",
+            "program": "${workspaceFolder}/bin/Debug/netcoreapp2.2/DeviceRegistrationService.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
