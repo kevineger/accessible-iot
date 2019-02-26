@@ -41,7 +41,26 @@ public class CommonApplication extends Application {
         AppCenter.start(this, BuildConfig.APPCENTER_KEY, Analytics.class, Crashes.class);
 
         AzureMaps.setSubscriptionKey(BuildConfig.AZUREMAPS_KEY);
+        FirebaseApp.initializeApp(this);
+        FirebaseInstanceId.getInstance().getInstanceId()
+                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w(TAG, "getInstanceId failed", task.getException());
+                            return;
+                        }
 
+                        // Get new Instance ID token
+                        String token = task.getResult().getToken();
+
+                        // Log and toast
+
+                        Log.d(TAG, token);
+                    }
+                });
+        Intent intent = new Intent(this, AccompanyRegistrationIntentService.class);
+        startService(intent);
         // Register with DeviceRegistrationService.
         Register();
     }

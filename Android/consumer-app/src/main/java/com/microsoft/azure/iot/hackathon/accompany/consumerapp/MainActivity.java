@@ -3,6 +3,7 @@ package com.microsoft.azure.iot.hackathon.accompany.consumerapp;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -19,6 +20,14 @@ import com.microsoft.azure.iot.hackathon.accompany.common.AccompanyLocationListe
 import com.microsoft.azure.iot.hackathon.accompany.common.AccompanyRegistrationIntentService;
 import com.microsoft.azure.iot.hackathon.accompany.common.CommonApplication;
 import com.microsoft.azure.iot.hackathon.accompany.common.MapActivity;
+import com.microsoft.azure.sdk.iot.device.Message;
+
+import org.json.JSONObject;
+
+import io.nlopez.smartlocation.OnLocationUpdatedListener;
+import io.nlopez.smartlocation.SmartLocation;
+import io.nlopez.smartlocation.location.config.LocationAccuracy;
+import io.nlopez.smartlocation.location.config.LocationParams;
 
 public class MainActivity extends MapActivity {
 
@@ -30,29 +39,40 @@ public class MainActivity extends MapActivity {
         setContentView(R.layout.activity_main);
         mapControl = findViewById(R.id.mapControl);
         mapControl.onCreate(savedInstanceState);
-        FirebaseApp.initializeApp(this);
-        FirebaseInstanceId.getInstance().getInstanceId()
-                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
-                        if (!task.isSuccessful()) {
-                            Log.w(TAG, "getInstanceId failed", task.getException());
-                            return;
-                        }
-
-                        // Get new Instance ID token
-                        String token = task.getResult().getToken();
-
-                        // Log and toast
-
-                        Log.d(TAG, token);
-                        Toast.makeText(MainActivity.this, token, Toast.LENGTH_SHORT).show();
-                    }
-                });
-        Intent intent = new Intent(this, AccompanyRegistrationIntentService.class);
-        startService(intent);
 
         requestPermissions(new String[] { Manifest.permission.ACCESS_FINE_LOCATION }, 1340);
+
+        LocationParams.Builder builder = new LocationParams.Builder()
+                .setAccuracy(LocationAccuracy.HIGH)
+                .setInterval(100);
+
+        SmartLocation.LocationControl smartLocation = SmartLocation.with(this).location().config(builder.build());
+
+        smartLocation.start(new OnLocationUpdatedListener() {
+            @Override
+            public void onLocationUpdated(Location location) {
+                Log.d(TAG, "Lat: " + location.getLatitude() + " Long: " + location.getLongitude());
+
+                try {
+
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("userId", CommonApplication.AndroidId);
+                    jsonObject.put("userType", "CareRecipient");
+
+
+                    JSONObject locationObject = new JSONObject();
+                    locationObject.put("lat", location.getLatitude());
+                    locationObject.put("long", location.getLongitude());
+
+                    jsonObject.put("location", locationObject);
+
+                    Message updateLocationMessage = new Message(jsonObject.toString());
+                    CommonApplication.deviceClient.sendEventAsync(updateLocationMessage, null, null);
+                } catch (Exception e ){
+                    Log.d(TAG, "Failed to send event. " + e.getMessage());
+                }
+            }
+        });
     }
 
     @Override
