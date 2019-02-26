@@ -1,7 +1,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-[JsonConverter(typeof(StringEnumConverter))]
 public class NotificationTypeModel
 {
     public NotificationType Type { get; set; }

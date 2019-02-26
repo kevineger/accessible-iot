@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/Notification.Service.csproj"
+                "${workspaceFolder}/DeviceRegistrationService.csproj"
             ],
             "problemMatcher": "$msCompile"
         }
