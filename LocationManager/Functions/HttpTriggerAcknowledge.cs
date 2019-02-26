@@ -20,59 +20,28 @@ namespace FunctionApp
         private static HttpClient httpClient = new HttpClient();
 
         [FunctionName("HttpTriggerAcknowledge")]
-        public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)]HttpRequest req, ILogger log)
+        public static async Task<IActionResult> Run(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)]HttpRequest req,
+            ILogger log,
+            ExecutionContext context)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
+            var container = ContainerHelper.Build(context);
+            var acknowledge = await RequestHelper.ReadAsync<Acknowledge>(req, log);
+            var acknowledgeRepo = (IAcknoledgeRepository)container.GetService(typeof(IAcknoledgeRepository));
+
 
             var azureMapsRouteCallBase = "https://atlas.microsoft.com/route/directions/json?subscription-key=7TqHJ3076KEoC-FRyx_gycYRNefYeVJdldgKomtKBfI&api-version=1.0&routeRepresentation=polyline&travelMode=pedestrian&instructionsType=tagged";
-
-            string caretaker = req.Query["caretaker"];
-            string action = req.Query["action"];
-            string individual = req.Query["individual"];
-            double gpslongcaretaker = Convert.ToDouble(req.Query["gpslongcaretaker"]);
-            double gpslatcaretaker = Convert.ToDouble(req.Query["gpslatcaretaker"]);
-            double gpslongindividual = Convert.ToDouble(req.Query["gpslongindividual"]);
-            double gpslatindividual = Convert.ToDouble(req.Query["gpslatindividual"]);
-
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-
-            caretaker = caretaker ?? data?.caretaker;
-            action = action ?? data?.action;
-            individual = individual ?? data?.individual;
-            gpslongcaretaker = data?.gpslongcaretaker;
-            gpslatcaretaker = data?.gpslatcaretaker;
-            gpslongindividual = data?.gpslongindividual;
-            gpslatindividual = data?.gpslatindividual;
-
-            // Define the row
-            string sRow = caretaker + action + individual + gpslongcaretaker + gpslatcaretaker + gpslongindividual + gpslatindividual;
-
-            // Create the Entity and set the partition
-            AckEntity _ackEntity = new AckEntity(individual, sRow);
-            _ackEntity.Caretaker = caretaker;
-            _ackEntity.Action = action;
-            _ackEntity.Individual = individual;
-            _ackEntity.GPSLongCaretaker = gpslongcaretaker;
-            _ackEntity.GPSLatCaretaker = gpslatcaretaker;
-            _ackEntity.GPSLongIndividual = gpslongindividual;
-            _ackEntity.GPSLatIndividual = gpslatindividual;
-
-            // Connect to the Storage account to write caretaker + action + individual + gpslongcaretaker + gpslatcaretaker
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=geofencingappacb737;AccountKey=4iyN6jL//5n0J3ay13Gm3VuFiSrCVGPfyi6Vv1bJF8RAlLfAIlv7jqWKpvUa/wwkfKWqUGOW5+590lq4rZjbXQ==;EndpointSuffix=core.windows.net");
-            CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
-
-            CloudTable table = tableClient.GetTableReference("GeoFencingTableStorage");
-            await table.CreateIfNotExistsAsync();
-
-            TableOperation insertOperation = TableOperation.Insert(_ackEntity);
-
             try
             {
-                await table.ExecuteAsync(insertOperation);
-
+                var res = await acknowledgeRepo.SaveAcknowledgeAsync(acknowledge);
+                
                 // Call Azure Maps with Lat and Long of Caretaker and Individual to get the route between the two
-                var azureMapsRouteAPI = azureMapsRouteCallBase + GetRouteQueryParam(gpslatcaretaker, gpslongcaretaker, gpslatindividual, gpslongindividual);
+                var azureMapsRouteAPI = azureMapsRouteCallBase + GetRouteQueryParam(
+                    acknowledge.CareTakerLocation.gpsLat,
+                    acknowledge.CareTakerLocation.gpsLong,
+                    acknowledge.CareRecipientLocation.gpsLat,
+                    acknowledge.CareRecipientLocation.gpsLong);
                 var mapsResponse = await GetAsync(azureMapsRouteAPI).ConfigureAwait(false);
 
                 return (ActionResult)new OkObjectResult(mapsResponse);
@@ -90,7 +59,7 @@ namespace FunctionApp
         private static async Task<string> GetAsync(string url)
         {
             var responseObject = await httpClient.GetAsync(url).ConfigureAwait(false);
-            if(responseObject.IsSuccessStatusCode)
+            if (responseObject.IsSuccessStatusCode)
             {
                 return await responseObject.Content.ReadAsStringAsync().ConfigureAwait(false);
             }

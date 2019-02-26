@@ -14,21 +14,9 @@ public interface ICurrentLocationRepository
     Task<IEnumerable<UserLocationDTO>> GetUsers(UserType type, CancellationToken ct = default(CancellationToken));
 }
 
-public class CurrentLocationRepository : ICurrentLocationRepository
+public class CurrentLocationRepository : AzureStorageBaseRepository, ICurrentLocationRepository
 {
-    private readonly CloudTable table;
-
-    public CurrentLocationRepository(IOptions<AzureTableOptions> options)
-    {
-        var connectionString = options.Value.AzureStorageAccountConnectionString;
-        var tableName = options.Value.TableName;
-
-        var storageAccount = CloudStorageAccount.Parse(connectionString);
-        var tableClient = storageAccount.CreateCloudTableClient();
-        table = tableClient.GetTableReference(tableName);
-        // TODO: Fix async in constructor
-        table.CreateIfNotExistsAsync().Wait();
-    }
+    public CurrentLocationRepository(IOptions<AzureTableOptions> options): base(options, options.Value.LocationTableName) {}
 
     public async Task<bool> SaveLocationAsync(UserLocation userLocation, CancellationToken ct = default(CancellationToken))
     {

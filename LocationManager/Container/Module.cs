@@ -23,6 +23,7 @@ public class Module : IModule
         services.Configure<AzureTableOptions>(options => configuration.GetSection("AzureTables").Bind(options));
         services.Configure<AzureMapsOptions>(options => configuration.GetSection("AzureMaps").Bind(options));
         services.AddSingleton<ICurrentLocationRepository, CurrentLocationRepository>();
+        services.AddSingleton<IAcknoledgeRepository, AcknoledgeRepository>();
         services.AddSingleton<IAzureMapsRepository, AzureMapsRepository>();
     }
 }
