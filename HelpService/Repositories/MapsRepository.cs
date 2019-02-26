@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 using LocationManager.Models;
 
 public interface IAzureMapsRepository {
-    Task<IEnumerable<string>> GetClosestUserIds(IEnumerable<UserLocation> helpersLocations, GPSLocation location);
+    Task<IEnumerable<string>> GetClosestUserIds(IEnumerable<UserLocation> helpersLocations, UserLocation userLocation);
 }
 
 public class AzureMapsRepository : IAzureMapsRepository
@@ -23,10 +23,10 @@ public class AzureMapsRepository : IAzureMapsRepository
         subscriptionKey =  options.Value.SubscriptionKey;
     }
 
-    public async Task<IEnumerable<string>> GetClosestUserIds(IEnumerable<UserLocation> helpersLocations, GPSLocation location)
+    public async Task<IEnumerable<string>> GetClosestUserIds(IEnumerable<UserLocation> helpersLocations, UserLocation userLocation)
     {
         var requestBody = GetClosestPointRequestBody(helpersLocations);
-        var requestUrl = GetAzureMapsPostURLToGetClosestPoints(subscriptionKey, location.gpsLat, location.gpsLong);
+        var requestUrl = GetAzureMapsPostURLToGetClosestPoints(subscriptionKey, userLocation.Location.gpsLat, userLocation.Location.gpsLong);
         var requestBodySerialized = JsonConvert.SerializeObject(requestBody);
         var responseBodySerialized = await PostAsync(requestUrl, requestBodySerialized);
         var closestPointResponse = JsonConvert.DeserializeObject<ClosestPointResponse>(responseBodySerialized);

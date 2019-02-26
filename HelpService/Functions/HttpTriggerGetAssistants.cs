@@ -1,5 +1,6 @@
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -20,14 +21,14 @@ namespace Azure.IoT
             ExecutionContext context)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
-            var location = await RequestHelper.ReadAsync<GPSLocation>(req, log);
+            var userLocation = await RequestHelper.ReadAsync<UserLocation>(req, log);
             var container = ContainerHelper.Build(context);
             var locationRepo = (ICurrentLocationRepository)container.GetService(typeof(ICurrentLocationRepository));
             var mapsRepo = (IAzureMapsRepository)container.GetService(typeof(IAzureMapsRepository));
             
             var assistantsDTO = await locationRepo.GetUsers(UserType.Assistant);
             var assistantsLocations = assistantsDTO.Select(t => t.ToUserLocation());
-            var closestUserIds = await mapsRepo.GetClosestUserIds(assistantsLocations, location);
+            var closestUserIds = await mapsRepo.GetClosestUserIds(assistantsLocations, userLocation);
 
             // TODO: Send notification to closest 5.
 
