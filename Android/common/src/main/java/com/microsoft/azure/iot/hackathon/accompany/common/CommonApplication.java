@@ -31,7 +31,8 @@ public class CommonApplication extends Application {
 
     private static final String TAG = "AccompanyCommon";
 
-    private DeviceClient deviceClient;
+    public static DeviceClient deviceClient;
+    public static String AndroidId;
 
     @Override
     public void onCreate() {
@@ -48,11 +49,11 @@ public class CommonApplication extends Application {
     public void Register() {
         RequestQueue requestQueue = Volley.newRequestQueue(this);
 
-        final String androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        Log.d(TAG, "Android ID: " + androidId);
+        AndroidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        Log.d(TAG, "Android ID: " + AndroidId);
         JSONObject registrationObject = new JSONObject();
         try {
-            registrationObject.put("deviceId", androidId);
+            registrationObject.put("deviceId", AndroidId);
             String registrationService = BuildConfig.REGISTRATIONSERVICE_HOSTNAME;
             JsonObjectRequest request = new JsonObjectRequest(registrationService + "/api/Registrations", registrationObject,
                     new Response.Listener<JSONObject>() {
@@ -62,7 +63,7 @@ public class CommonApplication extends Application {
                                 Log.d(TAG, "Successfully registered with the registration service.");
                                 String connectionString = response.getString("connectionString");
                                 String iothubHostname = BuildConfig.IOTHUB_HOSTNAME;
-                                InitializeDeviceClient("HostName="+iothubHostname+";DeviceId=" + androidId + ";SharedAccessKey=" + connectionString);
+                                InitializeDeviceClient("HostName="+iothubHostname+";DeviceId=" + AndroidId + ";SharedAccessKey=" + connectionString);
                             } catch (Exception e) {
                                 Log.e(TAG, "Error encountered while retrieving connection string to initialize device client. " + e.getMessage());
                             }
