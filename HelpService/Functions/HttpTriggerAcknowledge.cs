@@ -17,7 +17,7 @@ namespace FunctionApp
 {
     public static class HttpTriggerAcknowledge
     {
-        private static string showDirectionsPushUrl = "https://stegawhackathon.azurewebsites.net/api/Notifications";
+        private static string showDirectionsPushUrl = "https://stegawhackathon.azurewebsites.net/api/Notifications/directions";
 
         [FunctionName("HttpTriggerAcknowledge")]
         public static async Task<IActionResult> Run(
