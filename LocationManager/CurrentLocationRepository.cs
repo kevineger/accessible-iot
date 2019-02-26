@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
+using System.Collections.Generic;
 
 public interface ICurrentLocationRepository
 {
@@ -28,10 +29,17 @@ public class CurrentLocationRepository : ICurrentLocationRepository
 
     public async Task<bool> SaveLocationAsync(UserLocation userLocation)
     {
-        // Create the TableOperation object that inserts the customer entity.
-        var insertOperation = TableOperation.Insert(userLocation.ToUserLocationDTO());
+        var insertOperation = TableOperation.InsertOrReplace(userLocation.ToUserLocationDTO());
         var res = await table.ExecuteAsync(insertOperation);
 
         return res.HttpStatusCode / 100 == 2;
+    }
+
+    public async Task<IEnumerable<UserLocationDTO>> GetUsers(UserType type) {
+        var query = new TableQuery<UserLocationDTO>().Where(
+            TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, type.ToString("g")));
+
+        var res = await table.ExecuteQuerySegmentedAsync(query, null);
+        return res.Results;
     }
 }
