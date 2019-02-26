@@ -15,4 +15,7 @@
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LocationManager\LocationManager.csproj" />
+  </ItemGroup>
 </Project>
