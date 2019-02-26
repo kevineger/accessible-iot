@@ -31,7 +31,8 @@ public class CommonApplication extends Application {
 
     private static final String TAG = "AccompanyCommon";
 
-    private DeviceClient deviceClient;
+    public static DeviceClient deviceClient;
+    public static String AndroidId;
 
     @Override
     public void onCreate() {
@@ -40,7 +41,26 @@ public class CommonApplication extends Application {
         AppCenter.start(this, BuildConfig.APPCENTER_KEY, Analytics.class, Crashes.class);
 
         AzureMaps.setSubscriptionKey(BuildConfig.AZUREMAPS_KEY);
+        FirebaseApp.initializeApp(this);
+        FirebaseInstanceId.getInstance().getInstanceId()
+                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w(TAG, "getInstanceId failed", task.getException());
+                            return;
+                        }
 
+                        // Get new Instance ID token
+                        String token = task.getResult().getToken();
+
+                        // Log and toast
+
+                        Log.d(TAG, token);
+                    }
+                });
+        Intent intent = new Intent(this, AccompanyRegistrationIntentService.class);
+        startService(intent);
         // Register with DeviceRegistrationService.
         Register();
     }
@@ -48,11 +68,11 @@ public class CommonApplication extends Application {
     public void Register() {
         RequestQueue requestQueue = Volley.newRequestQueue(this);
 
-        final String androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        Log.d(TAG, "Android ID: " + androidId);
+        AndroidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        Log.d(TAG, "Android ID: " + AndroidId);
         JSONObject registrationObject = new JSONObject();
         try {
-            registrationObject.put("deviceId", androidId);
+            registrationObject.put("deviceId", AndroidId);
             String registrationService = BuildConfig.REGISTRATIONSERVICE_HOSTNAME;
             JsonObjectRequest request = new JsonObjectRequest(registrationService + "/api/Registrations", registrationObject,
                     new Response.Listener<JSONObject>() {
@@ -62,7 +82,7 @@ public class CommonApplication extends Application {
                                 Log.d(TAG, "Successfully registered with the registration service.");
                                 String connectionString = response.getString("connectionString");
                                 String iothubHostname = BuildConfig.IOTHUB_HOSTNAME;
-                                InitializeDeviceClient("HostName="+iothubHostname+";DeviceId=" + androidId + ";SharedAccessKey=" + connectionString);
+                                InitializeDeviceClient("HostName="+iothubHostname+";DeviceId=" + AndroidId + ";SharedAccessKey=" + connectionString);
                             } catch (Exception e) {
                                 Log.e(TAG, "Error encountered while retrieving connection string to initialize device client. " + e.getMessage());
                             }
