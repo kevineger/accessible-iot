@@ -26,7 +26,7 @@ namespace Azure.IoT
             var locationRepo = (ICurrentLocationRepository)container.GetService(typeof(ICurrentLocationRepository));
             var mapsRepo = (IAzureMapsRepository)container.GetService(typeof(IAzureMapsRepository));
             
-            var assistantsDTO = await locationRepo.GetUsers(UserType.Assistant);
+            var assistantsDTO = await locationRepo.GetUsers(UserType.CareRecipient);
             var assistantsLocations = assistantsDTO.Select(t => t.ToUserLocation());
             var closestUserIds = await mapsRepo.GetClosestUserIds(assistantsLocations, userLocation);
 

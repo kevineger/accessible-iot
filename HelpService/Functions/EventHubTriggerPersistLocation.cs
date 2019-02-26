@@ -12,7 +12,7 @@ public static class EventHubTriggerPersistLocation
 
     [FunctionName("EventHubTriggerPersistLocation")]
     public static void Run(
-    [EventHubTrigger("samples-workitems", Connection = "EventHubConnectionAppSetting")] EventData eventHubMessage,
+    [EventHubTrigger("stegawiothub", Connection = "EventHubConnStr", ConsumerGroup = "azurefunctionsconsumergroup")] EventData eventHubMessage,
     DateTime enqueuedTimeUtc,
     Int64 sequenceNumber,
     string offset,

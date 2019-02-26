@@ -3,7 +3,7 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 public class UserLocationDTO : TableEntity
 {
-    public UserLocationDTO(string type, Guid userId)
+    public UserLocationDTO(string type, string userId)
     {
         this.PartitionKey = type;
         this.RowKey = userId.ToString();

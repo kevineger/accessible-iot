@@ -1,5 +1,5 @@
 public enum UserType
 {
-    Assistant,
-    Assistee
+    CareRecipient,
+    CareTaker
 }
