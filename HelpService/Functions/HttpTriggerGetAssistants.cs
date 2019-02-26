@@ -14,6 +14,8 @@ namespace Azure.IoT
 {
     public static class HttpTriggerGetAssistants
     {
+        private static string requestHelpPushUrl = "https://stegawhackathon.azurewebsites.net/api/Notifications";
+
         [FunctionName("HttpTriggerGetAssistants")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] UserLocation userLocation,
@@ -29,9 +31,25 @@ namespace Azure.IoT
             var assistantsLocations = assistantsDTO.Select(t => t.ToUserLocation());
             var closestUserIds = await mapsRepo.GetClosestUserIds(assistantsLocations, userLocation);
 
-            // TODO: Send notification to closest 5.
+            var requestObject = new RequestHelpPushNotification()
+            {
+                SourceDeviceId = userLocation.UserId.ToString(),
+                TargetDeviceIds = closestUserIds.ToArray(),
+                Type = "RequestNearbyHelp",
+            };
 
-            return (ActionResult)new OkObjectResult(closestUserIds);
+            var nextBodySerialized = JsonConvert.SerializeObject(requestObject);
+
+            var (nextStatus, nextResponseMessage) = await HttpClientHelper.PostAsync(requestHelpPushUrl, nextBodySerialized);
+
+            if(nextStatus == System.Net.HttpStatusCode.OK 
+                || nextStatus == System.Net.HttpStatusCode.Created
+                || nextStatus == System.Net.HttpStatusCode.Accepted)
+            {
+                return (ActionResult)new OkObjectResult($"Successfully triggered the next step. Push Notifications. Body used : {nextBodySerialized}");
+            }
+
+            return (ActionResult)new BadRequestObjectResult($"Failed to trigger the next step. Push Notifications. Body used : {nextBodySerialized}");
         }
     }
 }
