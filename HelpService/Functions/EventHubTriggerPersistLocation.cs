@@ -26,8 +26,6 @@ public static class EventHubTriggerPersistLocation
         log.LogInformation($"SequenceNumber={sequenceNumber}");
         log.LogInformation($"Offset={offset}");
 
-        // -------------
-
         var container = ContainerHelper.Build(context);
         var repo = (ICurrentLocationRepository)container.GetService(typeof(ICurrentLocationRepository));
         var userLocation = JsonConvert.DeserializeObject<UserLocation>(Encoding.UTF8.GetString(eventHubMessage.Body));
