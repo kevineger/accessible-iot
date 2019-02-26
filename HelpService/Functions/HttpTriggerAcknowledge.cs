@@ -21,14 +21,13 @@ namespace FunctionApp
 
         [FunctionName("HttpTriggerAcknowledge")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)]HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)]Acknowledge acknowledge,
             ILogger log,
             ExecutionContext context)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
             
             var container = ContainerHelper.Build(context);
-            var acknowledge = await RequestHelper.ReadAsync<Acknowledge>(req, log);
             var acknowledgeRepo = (IAcknoledgeRepository)container.GetService(typeof(IAcknoledgeRepository));
 
 

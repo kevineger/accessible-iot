@@ -16,12 +16,11 @@ namespace Azure.IoT
     {
         [FunctionName("HttpTriggerGetAssistants")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] UserLocation userLocation,
             ILogger log,
             ExecutionContext context)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
-            var userLocation = await RequestHelper.ReadAsync<UserLocation>(req, log);
             var container = ContainerHelper.Build(context);
             var locationRepo = (ICurrentLocationRepository)container.GetService(typeof(ICurrentLocationRepository));
             var mapsRepo = (IAzureMapsRepository)container.GetService(typeof(IAzureMapsRepository));
