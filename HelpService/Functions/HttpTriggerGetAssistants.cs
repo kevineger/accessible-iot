@@ -20,17 +20,15 @@ namespace Azure.IoT
             ExecutionContext context)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
-            var individualUserLocationString = await (new StreamReader(req.Body, Encoding.UTF8)).ReadToEndAsync().ConfigureAwait(false);
-            var individualLocation = JsonConvert.DeserializeObject<UserLocation>(individualUserLocationString);
+            var location = await RequestHelper.ReadAsync<GPSLocation>(req, log);
             var container = ContainerHelper.Build(context);
             var locationRepo = (ICurrentLocationRepository)container.GetService(typeof(ICurrentLocationRepository));
             var mapsRepo = (IAzureMapsRepository)container.GetService(typeof(IAzureMapsRepository));
             
             var assistantsDTO = await locationRepo.GetUsers(UserType.Assistant);
             var assistantsLocations = assistantsDTO.Select(t => t.ToUserLocation());
-            var closestUserIds = mapsRepo.GetClosestUserIds(assistantsLocations, individualLocation);
+            var closestUserIds = await mapsRepo.GetClosestUserIds(assistantsLocations, location);
 
-            // TODO: Call Azure Maps for the collection of Users to send a message to. Determine closest 5.
             // TODO: Send notification to closest 5.
 
             return (ActionResult)new OkObjectResult(closestUserIds);

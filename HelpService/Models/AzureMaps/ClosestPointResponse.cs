@@ -29,7 +29,7 @@ namespace LocationManager.Models
     public class ClosestPointResultEntry
     {
         [JsonProperty("distanceInMeters")]
-        public int DistanceInMeters { get; set; }
+        public double DistanceInMeters { get; set; }
 
         [JsonProperty("geometryId")]
         public string GeometryId { get; set; }
