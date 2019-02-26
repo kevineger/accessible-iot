@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 
 namespace Azure.IoT
 {
-    public static class NewFunc
+    public static class HttpTriggerGetAssistants
     {
         [FunctionName("HttpTriggerGetAssistants")]
         public static async Task<IActionResult> Run(
