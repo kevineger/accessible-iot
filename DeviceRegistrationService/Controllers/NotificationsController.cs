@@ -42,7 +42,7 @@ public class NotificationsController : ControllerBase
         }
     }
 
-    [HttpPost("/directions")]
+    [HttpPost("directions")]
     public async Task<ActionResult> ShowDirections([FromBody] LineGeometry lineGeometry)
     {
         var notificationHubClient = NotificationHubClient.CreateClientFromConnectionString(NotificationHubsApiKey, NotificationHubsNamespace);
