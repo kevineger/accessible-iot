@@ -11,6 +11,8 @@ import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import org.json.JSONObject;
+
 public class AccompanyReceiveMessageService extends FirebaseMessagingService {
     private static final String TAG = "AccompanyReceiveMessage";
 
@@ -21,6 +23,21 @@ public class AccompanyReceiveMessageService extends FirebaseMessagingService {
         Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
 
+        String notificationType = remoteMessage.getData().get("Type");
+
+        switch(notificationType) {
+            case "5" :
+                Log.d(TAG, "Showing directions on map.");
+                String lineGeom = remoteMessage.getData().get("LineGeometry");
+                Log.d(TAG, "Line geometry: " + lineGeom);
+                break;
+            default:
+                Log.d(TAG, "Other message");
+                DisplayAckNotification();
+        }
+    }
+
+    private void DisplayAckNotification() {
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         NotificationChannel channel = new NotificationChannel("default", "default", NotificationManager.IMPORTANCE_DEFAULT);
