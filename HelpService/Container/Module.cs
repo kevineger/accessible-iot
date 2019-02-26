@@ -14,7 +14,7 @@ public class Module : IModule
     public void Load(IServiceCollection services)
     {
         var configuration = new ConfigurationBuilder()
-            .SetBasePath(context.FunctionAppDirectory)
+            // .SetBasePath(context.FunctionAppDirectory)
             .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
             .Build();

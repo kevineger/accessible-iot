@@ -6,7 +6,7 @@ public static class UserLocationExtensions
     {
         return new UserLocationDTO(u.Type.ToString("g"), u.UserId)
         {
-            UserId = u.UserId.ToString(),
+            UserId = u.UserId,
             Type = u.Type.ToString("g"),
             GPSLat = u.Location.gpsLat,
             GPSLong = u.Location.gpsLong
@@ -18,7 +18,7 @@ public static class UserLocationExtensions
         return new UserLocation()
         {
             Type = Enum.Parse<UserType>(userLocationDTO.Type),
-            UserId = Guid.Parse(userLocationDTO.UserId),
+            UserId = userLocationDTO.UserId,
             Location = new GPSLocation()
             {
                 gpsLat = userLocationDTO.GPSLat,
