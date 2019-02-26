@@ -24,7 +24,7 @@ namespace Azure.IoT
             // TODO: Call Azure Maps for the collection of Users to send a message to. Determine closest 5.
             // TODO: Send notification to closest 5.
 
-            return (ActionResult)new OkObjectResult($"Done.");
+            return (ActionResult)new OkObjectResult(assistants);
         }
     }
 }
