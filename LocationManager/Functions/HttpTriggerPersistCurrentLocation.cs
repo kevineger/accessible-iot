@@ -20,26 +20,10 @@ namespace Azure.IoT
             ExecutionContext context)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
+            var container = ContainerHelper.Build(context);
 
-            var container = new ContainerBuilder()
-                .RegisterModule(new Module(context))
-                .Build();
-
-            var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-
-            UserLocation userLocation = null;
-            try
-            {
-                userLocation = JsonConvert.DeserializeObject<UserLocation>(requestBody);
-            }
-            catch (Exception e)
-            {
-                log.Log(LogLevel.Information, e, $"Bad request. User payload: {requestBody}.");
-                return new BadRequestObjectResult(e);
-            }
-
+            var userLocation = await RequestHelper.ReadAsync<UserLocation>(req, log);
             var repo = (ICurrentLocationRepository)container.GetService(typeof(ICurrentLocationRepository));
-
             var res = await repo.SaveLocationAsync(userLocation);
 
             if (res)
@@ -48,7 +32,7 @@ namespace Azure.IoT
             }
             else
             {
-                log.LogError($"Failed to save user location. Payload: {requestBody}.");
+                log.LogError($"Failed to save user location.");
                 return new BadRequestObjectResult("We messed up.");
             }
         }
