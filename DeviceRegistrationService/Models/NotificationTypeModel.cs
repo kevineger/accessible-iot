@@ -16,5 +16,6 @@ public enum NotificationType
     RequestFriendsAndFamilyHelp,
     AlertNearby,
     AlertFriendsAndFamily,
-    DeviationFromPath
+    DeviationFromPath,
+    ShowDirections
 }
