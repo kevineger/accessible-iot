@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <com.microsoft.azure.maps.mapcontrol.MapControl
+        android:id="@+id/mapControl"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:mapcontrol_cameraTargetLat="47.6"
+        app:mapcontrol_cameraTargetLng="-122.33"
+        app:mapcontrol_cameraZoom="12"
+        />
+
+</android.support.constraint.ConstraintLayout>
