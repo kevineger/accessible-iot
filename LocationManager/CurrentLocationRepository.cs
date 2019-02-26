@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using System.Collections.Generic;
+using System.Threading;
 
 public interface ICurrentLocationRepository
 {
@@ -35,11 +36,11 @@ public class CurrentLocationRepository : ICurrentLocationRepository
         return res.HttpStatusCode / 100 == 2;
     }
 
-    public async Task<IEnumerable<UserLocationDTO>> GetUsers(UserType type) {
+    public async Task<IEnumerable<UserLocationDTO>> GetUsers(UserType type, CancellationToken ct) {
         var query = new TableQuery<UserLocationDTO>().Where(
             TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, type.ToString("g")));
 
-        var res = await table.ExecuteQuerySegmentedAsync(query, null);
-        return res.Results;
+        var res = await table.ExecuteQueryAsync(query, ct);
+        return res;
     }
 }
