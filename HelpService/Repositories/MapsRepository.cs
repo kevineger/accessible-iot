@@ -25,31 +25,23 @@ public class AzureMapsRepository : IAzureMapsRepository
 
     public async Task<IEnumerable<string>> GetClosestUserIds(IEnumerable<UserLocation> helpersLocations, UserLocation userLocation)
     {
+        var response = Enumerable.Empty<string>();
         var requestBody = GetClosestPointRequestBody(helpersLocations);
         var requestUrl = GetAzureMapsPostURLToGetClosestPoints(subscriptionKey, userLocation.Location.gpsLat, userLocation.Location.gpsLong);
         var requestBodySerialized = JsonConvert.SerializeObject(requestBody);
-        var responseBodySerialized = await PostAsync(requestUrl, requestBodySerialized);
-        var closestPointResponse = JsonConvert.DeserializeObject<ClosestPointResponse>(responseBodySerialized);
+        var (responseCode, responseBodySerialized) = await HttpClientHelper.PostAsync(requestUrl, requestBodySerialized);
 
-        if(closestPointResponse == null)
+        if (responseCode == System.Net.HttpStatusCode.OK)
         {
-            return Enumerable.Empty<string>();
+            var closestPointResponse = JsonConvert.DeserializeObject<ClosestPointResponse>(responseBodySerialized);
+
+            if (closestPointResponse != null)
+            {
+                response = closestPointResponse.Result.Select(t => t.GeometryId);
+            }
         }
 
-        return closestPointResponse.Result.Select(t => t.GeometryId);
-    }
-
-    private async Task<string> PostAsync(string url, string body)
-    {
-        HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, url);
-        httpRequestMessage.Content = new StringContent(body, Encoding.UTF8, "application/json");
-        var response = await httpClient.SendAsync(httpRequestMessage);
-        if(response.IsSuccessStatusCode)
-        {
-            return await response.Content.ReadAsStringAsync();
-        }
-
-        return $"Post to AzureMaps failed with code {response.StatusCode}";
+        return response;
     }
 
     private static string GetAzureMapsPostURLToGetClosestPoints(string subscriptionKey,
