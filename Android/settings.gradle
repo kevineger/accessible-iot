@@ -1,0 +1,1 @@
+include ':app', ':common', ':consumer-app', ':provider-app'
