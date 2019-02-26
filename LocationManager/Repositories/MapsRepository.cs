@@ -1,14 +1,14 @@
 using Microsoft.Extensions.Options;
 
-public interface IMapsRepository {
+public interface IAzureMapsRepository {
     // TODO
 }
 
-public class MapsRepository : IMapsRepository
+public class AzureMapsRepository : IAzureMapsRepository
 {
     private string subscriptionKey;
 
-    public MapsRepository(IOptions<AzureMapsOptions> options)
+    public AzureMapsRepository(IOptions<AzureMapsOptions> options)
     {
         subscriptionKey =  options.Value.SubscriptionKey;
     }

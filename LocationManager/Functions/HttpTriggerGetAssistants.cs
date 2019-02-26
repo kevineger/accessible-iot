@@ -16,6 +16,13 @@ namespace Azure.IoT
             ExecutionContext context)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
+            var container = ContainerHelper.Build(context);
+            var locationRepo = (ICurrentLocationRepository)container.GetService(typeof(ICurrentLocationRepository));
+            var mapsRepo = (IAzureMapsRepository)container.GetService(typeof(IAzureMapsRepository));
+            
+            var assistants = await locationRepo.GetUsers(UserType.Assistant);
+            // TODO: Call Azure Maps for the collection of Users to send a message to. Determine closest 5.
+            // TODO: Send notification to closest 5.
 
             return (ActionResult)new OkObjectResult($"Done.");
         }
