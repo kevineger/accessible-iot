@@ -6,6 +6,7 @@ using Microsoft.Azure.Devices;
 using Microsoft.Azure.NotificationHubs;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 
@@ -51,23 +52,9 @@ public class NotificationsController : ControllerBase
     [HttpPost("directions")]
     public async Task<ActionResult> ShowDirections([FromBody] LineGeometry lineGeometry)
     {
-        CloudStorageAccount storageAccount = CloudStorageAccount.Parse(StorageAccountConnectionString);
-
-        var tableClient = storageAccount.CreateCloudTableClient();
-        var cloudTable = tableClient.GetTableReference("routes");
-
-        await cloudTable.CreateIfNotExistsAsync();
-
         var routeId = Guid.NewGuid().ToString();
 
-        var route = new LineGeometryDataModel {
-            PartitionKey = routeId,
-            RowKey = routeId,
-            Route = JsonConvert.SerializeObject(lineGeometry)
-        };
-
-        var insertOperation = TableOperation.Insert(route);
-        await cloudTable.ExecuteAsync(insertOperation);
+        await BlobHelper.PostRouteToBlob(StorageAccountConnectionString, routeId, JsonConvert.SerializeObject(lineGeometry));
 
         var notificationHubClient = NotificationHubClient.CreateClientFromConnectionString(NotificationHubsApiKey, NotificationHubsNamespace);
 
