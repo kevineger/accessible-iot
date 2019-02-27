@@ -1,25 +1,23 @@
 package com.microsoft.azure.iot.hackathon.accompany.consumerapp;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.google.android.gms.common.internal.service.Common;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
 import com.microsoft.azure.iot.hackathon.accompany.common.AccompanyLocationListener;
-import com.microsoft.azure.iot.hackathon.accompany.common.AccompanyRegistrationIntentService;
+import com.microsoft.azure.iot.hackathon.accompany.common.AccompanyMapData;
 import com.microsoft.azure.iot.hackathon.accompany.common.CommonApplication;
 import com.microsoft.azure.iot.hackathon.accompany.common.MapActivity;
+import com.microsoft.azure.maps.mapcontrol.layer.LineLayer;
+import com.microsoft.azure.maps.mapcontrol.layer.SymbolLayer;
+import com.microsoft.azure.maps.mapcontrol.source.DataSource;
 import com.microsoft.azure.sdk.iot.device.Message;
 
 import org.json.JSONObject;
@@ -33,12 +31,26 @@ public class MainActivity extends MapActivity {
 
     private static final String TAG = "AccompanyConsumer";
 
+    DataSource routeDataSource = new DataSource();
+    LineLayer routeLineLayer = new LineLayer(routeDataSource);
+
+    DataSource destinationDataSource = new DataSource();
+    SymbolLayer destinationSymbolLayer = new SymbolLayer(destinationDataSource);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mapControl = findViewById(R.id.mapControl);
         mapControl.onCreate(savedInstanceState);
+        mapControl.getMapAsync(map -> {
+
+            map.sources.add(routeDataSource);
+            map.layers.add(routeLineLayer);
+
+            map.sources.add(destinationDataSource);
+            map.layers.add(destinationSymbolLayer);
+        });
 
         requestPermissions(new String[] { Manifest.permission.ACCESS_FINE_LOCATION }, 1340);
 
@@ -88,4 +100,38 @@ public class MainActivity extends MapActivity {
             Log.d(TAG, "Improper permissions for requesting location. " + e.getMessage());
         }
     }
+
+    private void updateMapData() {
+        routeDataSource.clear();
+        if (AccompanyMapData.lineGeom != null) {
+            routeDataSource.add(AccompanyMapData.lineGeom);
+        }
+
+        destinationDataSource.clear();
+        if (AccompanyMapData.destination != null) {
+            destinationDataSource.add(AccompanyMapData.destination);
+        }
+    }
+
+    private BroadcastReceiver updateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            updateMapData();
+        }
+    };
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateMapData();
+        LocalBroadcastManager.getInstance(this).registerReceiver(updateReceiver, new IntentFilter(AccompanyMapData.UPDATED));
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(updateReceiver);
+    }
+
+
 }
