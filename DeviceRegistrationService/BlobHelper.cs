@@ -9,7 +9,7 @@ public static class BlobHelper {
         var cloudBlobClient = storageAccount.CreateCloudBlobClient();
 
         var cloudBlobContainer = cloudBlobClient.GetContainerReference("dankblobs");
-        await cloudBlobContainer.CreateAsync();
+        await cloudBlobContainer.CreateIfNotExistsAsync();
 
         // Set the permissions so the blobs are public. 
         var permissions = new BlobContainerPermissions
