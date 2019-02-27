@@ -76,7 +76,7 @@ public class AcknowledgeBroadcastReceiver extends BroadcastReceiver {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.d(TAG, "Already acknowledged.");
+                        Log.d(TAG, "Already acknowledged. " + error);
                         Toast.makeText(context, "Already acknowledged.", Toast.LENGTH_SHORT).show();
                     }
                 });

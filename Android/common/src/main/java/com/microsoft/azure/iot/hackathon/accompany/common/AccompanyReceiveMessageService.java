@@ -20,6 +20,8 @@ import com.android.volley.toolbox.Volley;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.google.gson.Gson;
+import com.mapbox.geojson.Geometry;
+import com.mapbox.geojson.GeometryCollection;
 import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
 import com.microsoft.azure.iot.hackathon.accompany.common.constants.AccompanyIntents;
@@ -76,7 +78,25 @@ public class AccompanyReceiveMessageService extends FirebaseMessagingService {
                             pointList.add(Point.fromLngLat(-121.33, 46.64));
                             pointList.add(Point.fromLngLat(-120.33, 45.64));
 
+                            Point destPoint = Point.fromLngLat(-122.1335814,47.6366275);
+
                             AccompanyMapData.lineGeom = LineString.fromLngLats(pointList);
+                            AccompanyMapData.destination = destPoint;
+
+                            Log.d(TAG, "GEOMETRY: " + lineGeometry + " SIZE: " + lineGeometry.coordinates.size());
+
+                            List<Geometry> pointCollection = new ArrayList<Geometry>();
+                            for(int x = 0; x < lineGeometry.coordinates.size(); x++) {
+                                for(int y = 0; y < lineGeometry.coordinates.get(x).size(); y++) {
+                                    try {
+                                        pointCollection.add(Point.fromLngLat(lineGeometry.coordinates.get(x).get(y+1), lineGeometry.coordinates.get(x).get(y)));
+                                    } catch(Exception e) {
+
+                                    }
+                                }
+                            }
+
+                            AccompanyMapData.destinations = GeometryCollection.fromGeometries(pointCollection);
 
                             //AccompanyMapData.lineGeom = LineString.fromJson(response.toString());
                             LocalBroadcastManager.getInstance(service).sendBroadcast(new Intent(AccompanyMapData.UPDATED));

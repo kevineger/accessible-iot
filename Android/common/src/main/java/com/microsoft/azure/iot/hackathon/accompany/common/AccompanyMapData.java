@@ -4,9 +4,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.mapbox.geojson.BoundingBox;
+import com.mapbox.geojson.GeometryCollection;
 import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AccompanyMapData {
@@ -22,4 +24,5 @@ public class AccompanyMapData {
 
     public static Point destination =  Point.fromLngLat(-122.33, 47.64);
 
+    public static GeometryCollection destinations = GeometryCollection.fromGeometry(Point.fromLngLat(-122.33, 47.64));
 }

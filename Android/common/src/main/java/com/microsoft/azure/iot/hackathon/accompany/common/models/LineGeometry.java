@@ -4,5 +4,5 @@ import java.util.List;
 
 public class LineGeometry {
     public String type;
-    public List<List<Double>> points;
+    public List<List<Double>> coordinates;
 }

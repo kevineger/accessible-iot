@@ -81,7 +81,6 @@ public class MainActivity extends MapActivity {
                     jsonObject.put("userId", CommonApplication.AndroidId);
                     jsonObject.put("userType", "CareRecipient");
 
-
                     JSONObject locationObject = new JSONObject();
                     locationObject.put("lat", location.getLatitude());
                     locationObject.put("long", location.getLongitude());
@@ -126,6 +125,10 @@ public class MainActivity extends MapActivity {
         destinationDataSource.clear();
         if (AccompanyMapData.destination != null) {
             destinationDataSource.add(AccompanyMapData.destination);
+        }
+
+        if (AccompanyMapData.destinations != null) {
+            destinationDataSource.add(AccompanyMapData.destinations);
         }
     }
 
