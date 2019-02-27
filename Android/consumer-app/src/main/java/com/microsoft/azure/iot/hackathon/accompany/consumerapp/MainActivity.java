@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -14,6 +16,7 @@ import android.util.Log;
 
 import com.microsoft.azure.iot.hackathon.accompany.common.AccompanyLocationListener;
 import com.microsoft.azure.iot.hackathon.accompany.common.AccompanyMapData;
+import com.microsoft.azure.iot.hackathon.accompany.common.AccompanySensorListener;
 import com.microsoft.azure.iot.hackathon.accompany.common.CommonApplication;
 import com.microsoft.azure.iot.hackathon.accompany.common.MapActivity;
 import com.microsoft.azure.maps.mapcontrol.layer.LineLayer;
@@ -55,6 +58,9 @@ public class MainActivity extends MapActivity {
             map.layers.add(destinationSymbolLayer);
             map.layers.add(routeLineLayer);
         });
+
+        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensorManager.registerListener(new AccompanySensorListener(getApplicationContext()), sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
 
         requestPermissions(new String[] { Manifest.permission.ACCESS_FINE_LOCATION }, 1340);
 
