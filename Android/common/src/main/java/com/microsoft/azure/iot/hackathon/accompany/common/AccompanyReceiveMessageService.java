@@ -41,9 +41,6 @@ public class AccompanyReceiveMessageService extends FirebaseMessagingService {
     public void onMessageReceived(RemoteMessage remoteMessage) {
         Log.d(TAG, "From: " + remoteMessage.getFrom() + " Message: " + remoteMessage.getData());
 
-        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-
         String notificationType = remoteMessage.getData().get("Type");
 
         switch(notificationType) {
@@ -74,13 +71,12 @@ public class AccompanyReceiveMessageService extends FirebaseMessagingService {
 
                         try {
                             List<Point> pointList = new ArrayList<Point>();
+                            pointList.add(Point.fromLngLat(-122.1335814,47.6366275));
                             pointList.add(Point.fromLngLat(-122.33, 47.64));
-                            pointList.add(Point.fromLngLat(-121.33, 46.64));
-                            pointList.add(Point.fromLngLat(-120.33, 45.64));
 
                             Point destPoint = Point.fromLngLat(-122.1335814,47.6366275);
 
-                            AccompanyMapData.lineGeom = LineString.fromLngLats(pointList);
+                            //AccompanyMapData.lineGeom = LineString.fromLngLats(pointList);
                             AccompanyMapData.destination = destPoint;
 
                             Log.d(TAG, "GEOMETRY: " + lineGeometry + " SIZE: " + lineGeometry.coordinates.size());
@@ -89,12 +85,15 @@ public class AccompanyReceiveMessageService extends FirebaseMessagingService {
                             for(int x = 0; x < lineGeometry.coordinates.size(); x++) {
                                 for(int y = 0; y < lineGeometry.coordinates.get(x).size(); y++) {
                                     try {
+                                        Log.d(TAG, "Point X: " + lineGeometry.coordinates.get(x).get(y) + " Point Y: " + lineGeometry.coordinates.get(x).get(y+1));
                                         pointCollection.add(Point.fromLngLat(lineGeometry.coordinates.get(x).get(y+1), lineGeometry.coordinates.get(x).get(y)));
                                     } catch(Exception e) {
 
                                     }
                                 }
                             }
+
+                            pointCollection.add(LineString.fromLngLats(pointList));
 
                             AccompanyMapData.destinations = GeometryCollection.fromGeometries(pointCollection);
 

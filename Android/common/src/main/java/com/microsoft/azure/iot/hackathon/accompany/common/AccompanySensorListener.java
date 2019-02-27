@@ -93,7 +93,7 @@ public class AccompanySensorListener implements SensorEventListener {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.d(TAG, "Error while requesting help.");
+                        Log.d(TAG, "Error while requesting help. " + error);
                         Toast.makeText(context, "Issue with requesting help.", Toast.LENGTH_SHORT).show();
                     }
                 });
