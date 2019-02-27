@@ -3,13 +3,16 @@ package com.microsoft.azure.iot.hackathon.accompany.common;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.mapbox.geojson.LineString;
 
 import org.json.JSONObject;
 
@@ -30,6 +33,12 @@ public class AccompanyReceiveMessageService extends FirebaseMessagingService {
                 Log.d(TAG, "Showing directions on map.");
                 String lineGeom = remoteMessage.getData().get("LineGeometry");
                 Log.d(TAG, "Line geometry: " + lineGeom);
+                try {
+                    AccompanyMapData.lineGeom = LineString.fromJson(lineGeom);
+                    LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(AccompanyMapData.UPDATED));
+                } catch (Exception ex) {
+                    Log.e(TAG, ex.getMessage());
+                }
                 break;
             default:
                 Log.d(TAG, "Other message");
