@@ -45,7 +45,9 @@ namespace FunctionApp
                     || nextStatus == System.Net.HttpStatusCode.Created
                     || nextStatus == System.Net.HttpStatusCode.Accepted)
                 {
-                    return (ActionResult)new OkObjectResult($"Successfully triggered the next step. Show Directions. Body used : {directionsPathAsGeoJson}");
+                    return (ActionResult) new OkObjectResult(new AcknowledgeResponse {
+                        DestinationPath = directionsPathAsGeoJson
+                    });
                 }
 
                 return (ActionResult)new BadRequestObjectResult($"Failed to trigger the next step. Show Directions. Body used : {directionsPathAsGeoJson}");
