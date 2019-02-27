@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -12,6 +13,10 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.internal.service.Common;
+import com.google.gson.Gson;
+import com.microsoft.azure.iot.hackathon.accompany.common.constants.AccompanyIntents;
+import com.microsoft.azure.iot.hackathon.accompany.common.models.AccompanyLocation;
+import com.microsoft.azure.iot.hackathon.accompany.common.models.AcknowledgeRequest;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,6 +25,8 @@ import javax.json.JsonObject;
 
 public class AcknowledgeBroadcastReceiver extends BroadcastReceiver {
 
+    private static final String TAG = "AccompanyBroadcastReceiver";
+
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d("Accompany","Received intent!" + intent.getAction());
@@ -27,8 +34,12 @@ public class AcknowledgeBroadcastReceiver extends BroadcastReceiver {
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         switch(intent.getAction()) {
-            case "ACK_INTENT":
-                Acknowledge(context, intent);
+            case AccompanyIntents.ACK_INTENT:
+                try {
+                    Acknowledge(context, intent);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 break;
             default:
                 break;
@@ -38,40 +49,35 @@ public class AcknowledgeBroadcastReceiver extends BroadcastReceiver {
         manager.cancel(notificationId);
     }
 
-    private void Acknowledge(Context context, Intent intent) {
-
+    private void Acknowledge(Context context, Intent intent) throws JSONException {
         String sourceDeviceId = intent.getStringExtra("SourceDeviceId");
 
         RequestQueue requestQueue = Volley.newRequestQueue(context);
         String hostname = BuildConfig.ACKSERVICE_HOSTNAME;
 
-        JSONObject acknowledgeObject = new JSONObject();
-        try {
-            acknowledgeObject.put("careTakerUserId", CommonApplication.AndroidId);
-            acknowledgeObject.put("careRecipientId", sourceDeviceId);
-            acknowledgeObject.put("action", "ProvideHelp");
+        AcknowledgeRequest ackRequest = new AcknowledgeRequest();
+        ackRequest.careTakerUserId = CommonApplication.AndroidId;
+        ackRequest.careRecipientId = sourceDeviceId;
+        ackRequest.action = "ProvideHelp";
+        ackRequest.careRecipientLocation = new AccompanyLocation(42, 42);
+        ackRequest.careTakerLocation = new AccompanyLocation(42, 42);
 
-            JSONObject locationObject = new JSONObject();
-            locationObject.put("lat", 42);
-            locationObject.put("long", 42);
-
-            acknowledgeObject.put("careTakerLocation", locationObject);
-            acknowledgeObject.put("careRecipientLocation", locationObject);
-        } catch(JSONException e) {
-
-        }
+        String gsonData = new Gson().toJson(ackRequest);
+        JSONObject acknowledgeObject = new JSONObject(gsonData);
 
         JsonObjectRequest request = new JsonObjectRequest(hostname + "/api/HttpTriggerAcknowledge", acknowledgeObject,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.d("Accompany","Acknowledged successfully.");
+                        Log.d(TAG,"Acknowledged successfully.");
+                        Toast.makeText(context, "Acknowledged. Generating Route.", Toast.LENGTH_SHORT).show();
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.d("Accompany", "Already acknowledged.");
+                        Log.d(TAG, "Already acknowledged.");
+                        Toast.makeText(context, "Already acknowledged.", Toast.LENGTH_SHORT).show();
                     }
                 });
 

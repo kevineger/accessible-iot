@@ -20,6 +20,7 @@ import com.android.volley.toolbox.Volley;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.mapbox.geojson.LineString;
+import com.microsoft.azure.iot.hackathon.accompany.common.constants.AccompanyIntents;
 
 import org.json.JSONObject;
 
@@ -89,14 +90,14 @@ public class AccompanyReceiveMessageService extends FirebaseMessagingService {
 
 
         Intent answerAckIntent = new Intent(this, AcknowledgeBroadcastReceiver.class);
-        answerAckIntent.setAction("ACK_INTENT");
+        answerAckIntent.setAction(AccompanyIntents.ACK_INTENT);
         answerAckIntent.putExtra("NotificationId", 01);
         answerAckIntent.putExtra("SourceDeviceId", sourceDeviceId);
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, answerAckIntent, PendingIntent.FLAG_ONE_SHOT);
 
         Intent denyAckIntent = new Intent(this, AcknowledgeBroadcastReceiver.class);
-        denyAckIntent.setAction("DENY_INTENT");
+        denyAckIntent.setAction(AccompanyIntents.DENY_INTENT);
         denyAckIntent.putExtra("NotificationId", 01);
 
         PendingIntent pendingCloseIntent = PendingIntent.getBroadcast(this, 1, denyAckIntent, PendingIntent.FLAG_ONE_SHOT);

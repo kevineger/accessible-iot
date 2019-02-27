@@ -35,7 +35,8 @@
         <service android:name="com.microsoft.azure.iot.hackathon.accompany.common.AccompanyRegistrationIntentService" />
         <receiver android:name="com.microsoft.azure.iot.hackathon.accompany.common.AcknowledgeBroadcastReceiver" >
             <intent-filter>
-                <action android:name="ACK_INTENT"/>
+                <action android:name="ACCOMPANY_ACK_INTENT"/>
+                <action android:name="ACCOMPANY_DENY_INTENT"/>
             </intent-filter>
         </receiver>
     </application>
