@@ -19,10 +19,16 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.google.gson.Gson;
 import com.mapbox.geojson.LineString;
+import com.mapbox.geojson.Point;
 import com.microsoft.azure.iot.hackathon.accompany.common.constants.AccompanyIntents;
+import com.microsoft.azure.iot.hackathon.accompany.common.models.LineGeometry;
 
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AccompanyReceiveMessageService extends FirebaseMessagingService {
     private static final String TAG = "AccompanyReceiveMessage";
@@ -62,9 +68,17 @@ public class AccompanyReceiveMessageService extends FirebaseMessagingService {
                     @Override
                     public void onResponse(JSONObject response) {
                         Log.d(TAG, "Retrieved line geometry response. Response: " + response.toString());
+                        LineGeometry lineGeometry = new Gson().fromJson(response.toString(), LineGeometry.class);
 
                         try {
-                            AccompanyMapData.lineGeom = LineString.fromJson(response.toString());
+                            List<Point> pointList = new ArrayList<Point>();
+                            pointList.add(Point.fromLngLat(-122.33, 47.64));
+                            pointList.add(Point.fromLngLat(-121.33, 46.64));
+                            pointList.add(Point.fromLngLat(-120.33, 45.64));
+
+                            AccompanyMapData.lineGeom = LineString.fromLngLats(pointList);
+
+                            //AccompanyMapData.lineGeom = LineString.fromJson(response.toString());
                             LocalBroadcastManager.getInstance(service).sendBroadcast(new Intent(AccompanyMapData.UPDATED));
                         } catch (Exception ex) {
                             Log.e(TAG, ex.getMessage());
@@ -87,8 +101,6 @@ public class AccompanyReceiveMessageService extends FirebaseMessagingService {
         channel.setDescription("Channel Description");
 
         // TODO: Depending on type of notification - display something different.
-
-
         Intent answerAckIntent = new Intent(this, AcknowledgeBroadcastReceiver.class);
         answerAckIntent.setAction(AccompanyIntents.ACK_INTENT);
         answerAckIntent.putExtra("NotificationId", 01);

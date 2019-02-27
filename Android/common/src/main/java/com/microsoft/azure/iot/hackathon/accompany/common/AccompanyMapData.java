@@ -1,7 +1,13 @@
 package com.microsoft.azure.iot.hackathon.accompany.common;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
+import com.mapbox.geojson.BoundingBox;
 import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
+
+import java.util.List;
 
 public class AccompanyMapData {
 

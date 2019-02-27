@@ -18,6 +18,7 @@ import com.google.gson.Gson;
 import com.microsoft.azure.iot.hackathon.accompany.common.models.AccompanyLocation;
 import com.microsoft.azure.iot.hackathon.accompany.common.models.HelpRequest;
 
+import org.joda.time.DateTime;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,6 +30,7 @@ public class AccompanySensorListener implements SensorEventListener {
     private float mAccelLast = SensorManager.GRAVITY_EARTH; // last acceleration including gravity
 
     private boolean helpRequested = false;
+    private DateTime helpRequestedTime;
 
     private Context context;
 
@@ -50,7 +52,12 @@ public class AccompanySensorListener implements SensorEventListener {
             try {
                 if(!helpRequested) {
                     helpRequested = true;
+                    helpRequestedTime = DateTime.now();
                     RequestHelp();
+                } else {
+                    if(helpRequestedTime.plusSeconds(30).isBeforeNow()) {
+                        helpRequested = false;
+                    }
                 }
             } catch (Exception e) {
                 Log.d(TAG, "Error encountered: " + e);

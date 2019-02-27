@@ -117,6 +117,7 @@ public class MainActivity extends MapActivity {
     }
 
     private void updateMapData() {
+        Log.d(TAG, "Updating map data.");
         routeDataSource.clear();
         if (AccompanyMapData.lineGeom != null) {
             routeDataSource.add(AccompanyMapData.lineGeom);

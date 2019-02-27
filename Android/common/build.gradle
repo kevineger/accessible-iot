@@ -24,6 +24,7 @@ dependencies {
     api 'io.nlopez.smartlocation:library:3.3.3'
     api 'com.google.android.gms:play-services-location:16.0.0'
     api 'com.google.code.gson:gson:2.8.5'
+    implementation 'joda-time:joda-time:2.9.4'
     api fileTree(dir: 'libs', include: ['*.jar'])
 
     api "com.microsoft.azure.maps:mapcontrol:${azureMapsVersion}"
