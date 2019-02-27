@@ -2,6 +2,7 @@ package com.microsoft.azure.iot.hackathon.accompany.common;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.VibrationEffect;
@@ -19,14 +20,13 @@ import com.android.volley.toolbox.Volley;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.mapbox.geojson.LineString;
-import com.mapbox.geojson.Point;
 
 import org.json.JSONObject;
 
-import javax.json.JsonObject;
-
 public class AccompanyReceiveMessageService extends FirebaseMessagingService {
     private static final String TAG = "AccompanyReceiveMessage";
+
+    private static final String ACCOMPANY_ACK = "ACCOMPANY_ACKNOWLEDGE";
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
@@ -42,8 +42,7 @@ public class AccompanyReceiveMessageService extends FirebaseMessagingService {
                 DisplayLineGeometry(remoteMessage);
                 break;
             default:
-                Log.d(TAG, "Other message");
-                DisplayAckNotification();
+                DisplayAckNotification(remoteMessage.getData().get("SourceDeviceId"));
         }
     }
 
@@ -80,7 +79,7 @@ public class AccompanyReceiveMessageService extends FirebaseMessagingService {
         requestQueue.add(request);
     }
 
-    private void DisplayAckNotification() {
+    private void DisplayAckNotification(String sourceDeviceId) {
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         NotificationChannel channel = new NotificationChannel("default", "default", NotificationManager.IMPORTANCE_DEFAULT);
@@ -88,13 +87,27 @@ public class AccompanyReceiveMessageService extends FirebaseMessagingService {
 
         // TODO: Depending on type of notification - display something different.
 
+
+        Intent answerAckIntent = new Intent(this, AcknowledgeBroadcastReceiver.class);
+        answerAckIntent.setAction("ACK_INTENT");
+        answerAckIntent.putExtra("NotificationId", 01);
+        answerAckIntent.putExtra("SourceDeviceId", sourceDeviceId);
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, answerAckIntent, PendingIntent.FLAG_ONE_SHOT);
+
+        Intent denyAckIntent = new Intent(this, AcknowledgeBroadcastReceiver.class);
+        denyAckIntent.setAction("DENY_INTENT");
+        denyAckIntent.putExtra("NotificationId", 01);
+
+        PendingIntent pendingCloseIntent = PendingIntent.getBroadcast(this, 1, denyAckIntent, PendingIntent.FLAG_ONE_SHOT);
+
         manager.createNotificationChannel(channel);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "default")
                 .setSmallIcon(R.drawable.ic_launcher)
                 .setContentTitle("Request for help")
                 .setContentText("Acknowledge call for help.")
-                .addAction(R.drawable.mapcontrol_point_circle_blue, "Yes, I can help", null)
-                .addAction(R.drawable.mapbox_info_icon_default, "Not right now", null)
+                .addAction(R.drawable.mapcontrol_point_circle_blue, "Yes, I can help", pendingIntent)
+                .addAction(R.drawable.mapbox_info_icon_default, "Not right now", pendingCloseIntent)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 

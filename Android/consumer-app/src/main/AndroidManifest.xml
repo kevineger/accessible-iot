@@ -33,6 +33,11 @@
             </intent-filter>
         </service>
         <service android:name="com.microsoft.azure.iot.hackathon.accompany.common.AccompanyRegistrationIntentService" />
+        <receiver android:name="com.microsoft.azure.iot.hackathon.accompany.common.AcknowledgeBroadcastReceiver" >
+            <intent-filter>
+                <action android:name="ACK_INTENT"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

@@ -47,6 +47,7 @@ ext {
     registrationService = properties.getProperty("registrationService.hostname")
     notificationHubName = properties.getProperty("notificationhub.hubName")
     notificationHubConnectionString = properties.getProperty("notificationhub.connectionString")
+    ackServiceHostName = properties.getProperty("ackservice.hostname")
 }
 
 subprojects {
@@ -68,6 +69,7 @@ subprojects {
             config.buildConfigField "String", "REGISTRATIONSERVICE_HOSTNAME", "\"${registrationService}\""
             config.buildConfigField "String", "NOTIFICATIONHUB_HUBNAME", "\"${notificationHubName}\""
             config.buildConfigField "String", "NOTIFICATIONHUB_CONNECTIONSTRING", "\"${notificationHubConnectionString}\""
+            config.buildConfigField "String", "ACKSERVICE_HOSTNAME", "\"${ackServiceHostName}\""
 
             android.compileOptions {
                 sourceCompatibility JavaVersion.VERSION_1_8
