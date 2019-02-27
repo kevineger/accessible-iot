@@ -76,7 +76,7 @@ public class AccompanyReceiveMessageService extends FirebaseMessagingService {
                             for(int y = 0; y < lineGeometry.coordinates.get(x).size(); y++) {
                                 try {
                                     Log.d(TAG, "Point X: " + lineGeometry.coordinates.get(x).get(y) + " Point Y: " + lineGeometry.coordinates.get(x).get(y+1));
-                                    pointCollection.add(Point.fromLngLat(lineGeometry.coordinates.get(x).get(y+1), lineGeometry.coordinates.get(x).get(y)));
+                                    pointCollection.add(Point.fromLngLat(lineGeometry.coordinates.get(x).get(y), lineGeometry.coordinates.get(x).get(y+1)));
                                 } catch(Exception e) {
 
                                 }

@@ -16,7 +16,7 @@ public class AccompanyMapData {
             "   ]\n" +
             "}");
 
-    public static Point destination =  Point.fromLngLat(-122.33, 47.64);
+    public static Point destination;
 
-    public static GeometryCollection destinations = GeometryCollection.fromGeometry(Point.fromLngLat(-122.33, 47.64));
+    public static GeometryCollection destinations;
 }

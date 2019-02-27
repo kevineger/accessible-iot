@@ -54,8 +54,8 @@ public class AcknowledgeBroadcastReceiver extends BroadcastReceiver {
         ackRequest.careTakerUserId = CommonApplication.AndroidId;
         ackRequest.careRecipientId = sourceDeviceId;
         ackRequest.action = "ProvideHelp";
-        ackRequest.careRecipientLocation = new AccompanyLocation(42, 42);
-        ackRequest.careTakerLocation = new AccompanyLocation(42, 42);
+        ackRequest.careRecipientLocation = new AccompanyLocation(47.6566138, -122.1635578);
+        ackRequest.careTakerLocation = new AccompanyLocation(47.6366138, -122.1335578);
 
         String gsonData = new Gson().toJson(ackRequest);
         JSONObject acknowledgeObject = new JSONObject(gsonData);
