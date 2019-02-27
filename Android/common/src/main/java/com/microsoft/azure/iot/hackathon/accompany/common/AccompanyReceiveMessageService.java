@@ -13,6 +13,7 @@ import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.mapbox.geojson.LineString;
+import com.mapbox.geojson.Point;
 
 import org.json.JSONObject;
 

@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -27,15 +28,19 @@ import io.nlopez.smartlocation.SmartLocation;
 import io.nlopez.smartlocation.location.config.LocationAccuracy;
 import io.nlopez.smartlocation.location.config.LocationParams;
 
+import static com.microsoft.azure.maps.mapcontrol.options.LineLayerOptions.strokeColor;
+import static com.microsoft.azure.maps.mapcontrol.options.LineLayerOptions.strokeWidth;
+import static com.microsoft.azure.maps.mapcontrol.options.SymbolLayerOptions.iconImage;
+
 public class MainActivity extends MapActivity {
 
     private static final String TAG = "AccompanyConsumer";
 
     DataSource routeDataSource = new DataSource();
-    LineLayer routeLineLayer = new LineLayer(routeDataSource);
+    LineLayer routeLineLayer = new LineLayer(routeDataSource, strokeColor(Color.parseColor("#e55e5e")), strokeWidth(5f));
 
     DataSource destinationDataSource = new DataSource();
-    SymbolLayer destinationSymbolLayer = new SymbolLayer(destinationDataSource);
+    SymbolLayer destinationSymbolLayer = new SymbolLayer(destinationDataSource, iconImage("dest-icon"));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,12 +49,11 @@ public class MainActivity extends MapActivity {
         mapControl = findViewById(R.id.mapControl);
         mapControl.onCreate(savedInstanceState);
         mapControl.getMapAsync(map -> {
-
+            map.images.add("dest-icon", R.drawable.mapcontrol_marker_red);
             map.sources.add(routeDataSource);
-            map.layers.add(routeLineLayer);
-
             map.sources.add(destinationDataSource);
             map.layers.add(destinationSymbolLayer);
+            map.layers.add(routeLineLayer);
         });
 
         requestPermissions(new String[] { Manifest.permission.ACCESS_FINE_LOCATION }, 1340);
