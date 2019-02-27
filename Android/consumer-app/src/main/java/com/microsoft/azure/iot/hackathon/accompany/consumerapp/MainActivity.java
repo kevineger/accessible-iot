@@ -83,7 +83,12 @@ public class MainActivity extends MapActivity {
                     jsonObject.put("location", locationObject);
 
                     Message updateLocationMessage = new Message(jsonObject.toString());
-                    CommonApplication.deviceClient.sendEventAsync(updateLocationMessage, null, null);
+
+                    if (CommonApplication.deviceClient != null) {
+                        CommonApplication.deviceClient.sendEventAsync(updateLocationMessage, null, null);
+                    } else {
+                        Log.d(TAG, "Device client is null.");
+                    }
                 } catch (Exception e ){
                     Log.d(TAG, "Failed to send event. " + e.getMessage());
                 }

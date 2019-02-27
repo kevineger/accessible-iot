@@ -10,12 +10,20 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
 
 import org.json.JSONObject;
+
+import javax.json.JsonObject;
 
 public class AccompanyReceiveMessageService extends FirebaseMessagingService {
     private static final String TAG = "AccompanyReceiveMessage";
@@ -31,20 +39,45 @@ public class AccompanyReceiveMessageService extends FirebaseMessagingService {
 
         switch(notificationType) {
             case "5" :
-                Log.d(TAG, "Showing directions on map.");
-                String lineGeom = remoteMessage.getData().get("LineGeometry");
-                Log.d(TAG, "Line geometry: " + lineGeom);
-                try {
-                    AccompanyMapData.lineGeom = LineString.fromJson(lineGeom);
-                    LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(AccompanyMapData.UPDATED));
-                } catch (Exception ex) {
-                    Log.e(TAG, ex.getMessage());
-                }
+                DisplayLineGeometry(remoteMessage);
                 break;
             default:
                 Log.d(TAG, "Other message");
                 DisplayAckNotification();
         }
+    }
+
+    private void DisplayLineGeometry(RemoteMessage remoteMessage) {
+        Log.d(TAG, "Showing directions on map.");
+
+        String resourceUrl = remoteMessage.getData().get("ResourceUrl");
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        String registrationService = BuildConfig.REGISTRATIONSERVICE_HOSTNAME;
+
+        AccompanyReceiveMessageService service = this;
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, registrationService + resourceUrl, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d(TAG, "Retrieved line geometry response. Response: " + response.toString());
+
+                        try {
+                            AccompanyMapData.lineGeom = LineString.fromJson(response.toString());
+                            LocalBroadcastManager.getInstance(service).sendBroadcast(new Intent(AccompanyMapData.UPDATED));
+                        } catch (Exception ex) {
+                            Log.e(TAG, ex.getMessage());
+                        }
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e(TAG, "ERROR");
+                    }
+                });
+
+        requestQueue.add(request);
     }
 
     private void DisplayAckNotification() {
