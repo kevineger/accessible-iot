@@ -2,8 +2,11 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Devices;
 using Microsoft.Azure.NotificationHubs;
 using Microsoft.Extensions.Options;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 
 [ApiController]
@@ -15,10 +18,13 @@ public class NotificationsController : ControllerBase
 
     private readonly string NotificationHubsNamespace;
 
+    private readonly string StorageAccountConnectionString;
+
     public NotificationsController(IOptions<SecretOptions> secrets)
     {
         this.NotificationHubsApiKey = secrets.Value.NotificationHubsConnectionString;
         this.NotificationHubsNamespace = secrets.Value.NotificationHubsNamespace;
+        this.StorageAccountConnectionString = secrets.Value.TableStorageConnectionString;
     }
 
     [HttpPost]
@@ -45,12 +51,29 @@ public class NotificationsController : ControllerBase
     [HttpPost("directions")]
     public async Task<ActionResult> ShowDirections([FromBody] LineGeometry lineGeometry)
     {
+        CloudStorageAccount storageAccount = CloudStorageAccount.Parse(StorageAccountConnectionString);
+
+        var tableClient = storageAccount.CreateCloudTableClient();
+        var cloudTable = tableClient.GetTableReference("routes");
+
+        await cloudTable.CreateIfNotExistsAsync();
+
+        var routeId = Guid.NewGuid().ToString();
+
+        var route = new LineGeometryDataModel {
+            PartitionKey = routeId,
+            RowKey = routeId,
+            Route = JsonConvert.SerializeObject(lineGeometry)
+        };
+
+        var insertOperation = TableOperation.Insert(route);
+        await cloudTable.ExecuteAsync(insertOperation);
+
         var notificationHubClient = NotificationHubClient.CreateClientFromConnectionString(NotificationHubsApiKey, NotificationHubsNamespace);
 
         var notificationModel = new LineGeometryNotification
         {
-            LineGeometry = lineGeometry
-
+            ResourceUrl = $"/api/Routes/{routeId}"
         };
 
         var message = new Message
