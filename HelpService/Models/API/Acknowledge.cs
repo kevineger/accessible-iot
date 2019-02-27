@@ -9,16 +9,11 @@ public class Acknowledge
     public string CareRecipientId { get; set; }
 
     [JsonProperty("action")]
-    public CareTakerAction Action { get; set; }
+    public string Action { get; set; }
 
     [JsonProperty("careTakerLocation")]
     public GPSLocation CareTakerLocation { get; set; }
 
     [JsonProperty("careRecipientLocation")]
     public GPSLocation CareRecipientLocation { get; set; }
-
-    public enum CareTakerAction
-    {
-        ProvideHelp
-    }
 }

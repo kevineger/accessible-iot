@@ -48,7 +48,7 @@ namespace FunctionApp
                     return (ActionResult)new OkObjectResult($"Successfully triggered the next step. Show Directions. Body used : {directionsPathAsGeoJson}");
                 }
 
-                return (ActionResult)new BadRequestObjectResult($"Failed to trigger the next step.S how Directions. Body used : {directionsPathAsGeoJson}");
+                return (ActionResult)new BadRequestObjectResult($"Failed to trigger the next step. Show Directions. Body used : {directionsPathAsGeoJson}");
             }
             catch (StorageException)
             {
