@@ -5,16 +5,12 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -27,15 +23,11 @@ import com.mapbox.geojson.Point;
 import com.microsoft.azure.iot.hackathon.accompany.common.constants.AccompanyIntents;
 import com.microsoft.azure.iot.hackathon.accompany.common.models.LineGeometry;
 
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class AccompanyReceiveMessageService extends FirebaseMessagingService {
     private static final String TAG = "AccompanyReceiveMessage";
-
-    private static final String ACCOMPANY_ACK = "ACCOMPANY_ACKNOWLEDGE";
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
@@ -63,52 +55,44 @@ public class AccompanyReceiveMessageService extends FirebaseMessagingService {
         AccompanyReceiveMessageService service = this;
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, registrationService + resourceUrl, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.d(TAG, "Retrieved line geometry response. Response: " + response.toString());
-                        LineGeometry lineGeometry = new Gson().fromJson(response.toString(), LineGeometry.class);
+                response -> {
+                    Log.d(TAG, "Retrieved line geometry response. Response: " + response.toString());
+                    LineGeometry lineGeometry = new Gson().fromJson(response.toString(), LineGeometry.class);
 
-                        try {
-                            List<Point> pointList = new ArrayList<Point>();
-                            pointList.add(Point.fromLngLat(-122.1335814,47.6366275));
-                            pointList.add(Point.fromLngLat(-122.33, 47.64));
+                    try {
+                        List<Point> pointList = new ArrayList<Point>();
+                        pointList.add(Point.fromLngLat(-122.1335814,47.6366275));
+                        pointList.add(Point.fromLngLat(-122.33, 47.64));
 
-                            Point destPoint = Point.fromLngLat(-122.1335814,47.6366275);
+                        Point destPoint = Point.fromLngLat(-122.1335814,47.6366275);
 
-                            //AccompanyMapData.lineGeom = LineString.fromLngLats(pointList);
-                            AccompanyMapData.destination = destPoint;
+                        //AccompanyMapData.lineGeom = LineString.fromLngLats(pointList);
+                        AccompanyMapData.destination = destPoint;
 
-                            Log.d(TAG, "GEOMETRY: " + lineGeometry + " SIZE: " + lineGeometry.coordinates.size());
+                        Log.d(TAG, "GEOMETRY: " + lineGeometry + " SIZE: " + lineGeometry.coordinates.size());
 
-                            List<Geometry> pointCollection = new ArrayList<Geometry>();
-                            for(int x = 0; x < lineGeometry.coordinates.size(); x++) {
-                                for(int y = 0; y < lineGeometry.coordinates.get(x).size(); y++) {
-                                    try {
-                                        Log.d(TAG, "Point X: " + lineGeometry.coordinates.get(x).get(y) + " Point Y: " + lineGeometry.coordinates.get(x).get(y+1));
-                                        pointCollection.add(Point.fromLngLat(lineGeometry.coordinates.get(x).get(y+1), lineGeometry.coordinates.get(x).get(y)));
-                                    } catch(Exception e) {
+                        List<Geometry> pointCollection = new ArrayList<Geometry>();
+                        for(int x = 0; x < lineGeometry.coordinates.size(); x++) {
+                            for(int y = 0; y < lineGeometry.coordinates.get(x).size(); y++) {
+                                try {
+                                    Log.d(TAG, "Point X: " + lineGeometry.coordinates.get(x).get(y) + " Point Y: " + lineGeometry.coordinates.get(x).get(y+1));
+                                    pointCollection.add(Point.fromLngLat(lineGeometry.coordinates.get(x).get(y+1), lineGeometry.coordinates.get(x).get(y)));
+                                } catch(Exception e) {
 
-                                    }
                                 }
                             }
-
-                            pointCollection.add(LineString.fromLngLats(pointList));
-
-                            AccompanyMapData.destinations = GeometryCollection.fromGeometries(pointCollection);
-
-                            //AccompanyMapData.lineGeom = LineString.fromJson(response.toString());
-                            LocalBroadcastManager.getInstance(service).sendBroadcast(new Intent(AccompanyMapData.UPDATED));
-                        } catch (Exception ex) {
-                            Log.e(TAG, ex.getMessage());
                         }
+
+                        pointCollection.add(LineString.fromLngLats(pointList));
+
+                        AccompanyMapData.destinations = GeometryCollection.fromGeometries(pointCollection);
+
+                        //AccompanyMapData.lineGeom = LineString.fromJson(response.toString());
+                        LocalBroadcastManager.getInstance(service).sendBroadcast(new Intent(AccompanyMapData.UPDATED));
+                    } catch (Exception ex) {
+                        Log.e(TAG, ex.getMessage());
                     }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e(TAG, "ERROR");
-                    }
-                });
+                }, error -> Log.e(TAG, "Error retrieving resource geometry to display pedestrian path on map control. VolleyError: " + error));
 
         requestQueue.add(request);
     }

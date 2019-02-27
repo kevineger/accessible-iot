@@ -8,11 +8,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.gms.common.internal.service.Common;
 import com.google.gson.Gson;
 import com.microsoft.azure.iot.hackathon.accompany.common.constants.AccompanyIntents;
 import com.microsoft.azure.iot.hackathon.accompany.common.models.AccompanyLocation;
@@ -20,8 +17,6 @@ import com.microsoft.azure.iot.hackathon.accompany.common.models.AcknowledgeRequ
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import javax.json.JsonObject;
 
 public class AcknowledgeBroadcastReceiver extends BroadcastReceiver {
 
@@ -66,19 +61,13 @@ public class AcknowledgeBroadcastReceiver extends BroadcastReceiver {
         JSONObject acknowledgeObject = new JSONObject(gsonData);
 
         JsonObjectRequest request = new JsonObjectRequest(hostname + "/api/HttpTriggerAcknowledge", acknowledgeObject,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.d(TAG,"Acknowledged successfully.");
-                        Toast.makeText(context, "Acknowledged. Generating Route.", Toast.LENGTH_SHORT).show();
-                    }
+                response -> {
+                    Log.d(TAG,"Acknowledged successfully.");
+                    Toast.makeText(context, "Acknowledged. Generating Route.", Toast.LENGTH_SHORT).show();
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.d(TAG, "Already acknowledged. " + error);
-                        Toast.makeText(context, "Already acknowledged.", Toast.LENGTH_SHORT).show();
-                    }
+                error -> {
+                    Log.d(TAG, "Already acknowledged. " + error);
+                    Toast.makeText(context, "Already acknowledged.", Toast.LENGTH_SHORT).show();
                 });
 
         requestQueue.add(request);

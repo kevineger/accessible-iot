@@ -83,19 +83,13 @@ public class AccompanySensorListener implements SensorEventListener {
         JSONObject helpRequestObject = new JSONObject(gsonData);
 
         JsonObjectRequest request = new JsonObjectRequest(hostname + "/api/HttpTriggerGetAssistants", helpRequestObject,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.d(TAG,"Help requested");
-                        Toast.makeText(context, "Help requested.", Toast.LENGTH_SHORT).show();
-                    }
+                response -> {
+                    Log.d(TAG,"Help requested");
+                    Toast.makeText(context, "Help requested.", Toast.LENGTH_SHORT).show();
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.d(TAG, "Error while requesting help. " + error);
-                        Toast.makeText(context, "Issue with requesting help.", Toast.LENGTH_SHORT).show();
-                    }
+                error -> {
+                    Log.d(TAG, "Error while requesting help. " + error);
+                    Toast.makeText(context, "Issue with requesting help.", Toast.LENGTH_SHORT).show();
                 });
 
         requestQueue.add(request);

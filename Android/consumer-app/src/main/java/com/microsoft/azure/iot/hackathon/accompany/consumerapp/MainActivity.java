@@ -14,11 +14,14 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.google.gson.Gson;
 import com.microsoft.azure.iot.hackathon.accompany.common.AccompanyLocationListener;
 import com.microsoft.azure.iot.hackathon.accompany.common.AccompanyMapData;
 import com.microsoft.azure.iot.hackathon.accompany.common.AccompanySensorListener;
 import com.microsoft.azure.iot.hackathon.accompany.common.CommonApplication;
 import com.microsoft.azure.iot.hackathon.accompany.common.MapActivity;
+import com.microsoft.azure.iot.hackathon.accompany.common.models.AccompanyLocation;
+import com.microsoft.azure.iot.hackathon.accompany.common.models.UpdateLocationRequest;
 import com.microsoft.azure.maps.mapcontrol.layer.LineLayer;
 import com.microsoft.azure.maps.mapcontrol.layer.SymbolLayer;
 import com.microsoft.azure.maps.mapcontrol.source.DataSource;
@@ -70,33 +73,30 @@ public class MainActivity extends MapActivity {
 
         SmartLocation.LocationControl smartLocation = SmartLocation.with(this).location().config(builder.build());
 
-        smartLocation.start(new OnLocationUpdatedListener() {
-            @Override
-            public void onLocationUpdated(Location location) {
-                Log.d(TAG, "Lat: " + location.getLatitude() + " Long: " + location.getLongitude());
+        smartLocation.start(location -> {
+            Log.d(TAG, "Latitude: " + location.getLatitude() + " Longitude: " + location.getLongitude());
 
-                try {
+            try {
+                UpdateLocationRequest updateLocationRequest = new UpdateLocationRequest();
+                updateLocationRequest.userId = CommonApplication.AndroidId;
 
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("userId", CommonApplication.AndroidId);
-                    jsonObject.put("userType", "CareRecipient");
+                // TODO: This value depends on provider or consumer app.
+                updateLocationRequest.userType = "CareRecipient";
 
-                    JSONObject locationObject = new JSONObject();
-                    locationObject.put("lat", location.getLatitude());
-                    locationObject.put("long", location.getLongitude());
+                AccompanyLocation locationObj = new AccompanyLocation(location.getLatitude(), location.getLongitude());
+                updateLocationRequest.location = locationObj;
 
-                    jsonObject.put("location", locationObject);
+                String data = new Gson().toJson(updateLocationRequest);
 
-                    Message updateLocationMessage = new Message(jsonObject.toString());
+                Message updateLocationMessage = new Message(data);
 
-                    if (CommonApplication.deviceClient != null) {
-                        CommonApplication.deviceClient.sendEventAsync(updateLocationMessage, null, null);
-                    } else {
-                        Log.d(TAG, "Device client is null.");
-                    }
-                } catch (Exception e ){
-                    Log.d(TAG, "Failed to send event. " + e.getMessage());
+                if (CommonApplication.deviceClient != null) {
+                    CommonApplication.deviceClient.sendEventAsync(updateLocationMessage, null, null);
+                } else {
+                    Log.d(TAG, "Device client is null.");
                 }
+            } catch (Exception e ){
+                Log.d(TAG, "Failed to send event. " + e.getMessage());
             }
         });
     }
@@ -104,15 +104,6 @@ public class MainActivity extends MapActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         Log.d(TAG, "Retrieved permission results for requestCode " + requestCode);
-
-        AccompanyLocationListener locationListener = new AccompanyLocationListener(CommonApplication.deviceClient);
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-        try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-        } catch(SecurityException e) {
-            Log.d(TAG, "Improper permissions for requesting location. " + e.getMessage());
-        }
     }
 
     private void updateMapData() {

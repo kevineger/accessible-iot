@@ -3,14 +3,14 @@ package com.microsoft.azure.iot.hackathon.accompany.common.models;
 import com.google.gson.annotations.SerializedName;
 
 public class AccompanyLocation {
-    public AccompanyLocation(long latitude, long longitude) {
+    public AccompanyLocation(double latitude, double longitude) {
         Latitude = latitude;
         Longitude = longitude;
     }
 
     @SerializedName("lat")
-    public long Latitude;
+    public double Latitude;
 
     @SerializedName("long")
-    public long Longitude;
+    public double Longitude;
 }

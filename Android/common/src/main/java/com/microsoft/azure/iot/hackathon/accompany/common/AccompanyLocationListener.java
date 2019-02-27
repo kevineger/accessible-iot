@@ -5,7 +5,9 @@ import android.location.LocationListener;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.google.android.gms.common.internal.service.Common;
+import com.google.gson.Gson;
+import com.microsoft.azure.iot.hackathon.accompany.common.models.AccompanyLocation;
+import com.microsoft.azure.iot.hackathon.accompany.common.models.UpdateLocationRequest;
 import com.microsoft.azure.sdk.iot.device.DeviceClient;
 import com.microsoft.azure.sdk.iot.device.Message;
 
@@ -25,21 +27,20 @@ public class AccompanyLocationListener implements LocationListener {
         Log.d(TAG, "Lat: " + location.getLatitude() + " Long: " + location.getLongitude());
 
         try {
+            UpdateLocationRequest updateLocationRequest = new UpdateLocationRequest();
+            updateLocationRequest.userId = CommonApplication.AndroidId;
 
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("userId", CommonApplication.AndroidId);
-            jsonObject.put("userType", "CareRecipient");
+            // TODO: This value depends on provider or consumer app.
+            updateLocationRequest.userType = "CareRecipient";
 
+            AccompanyLocation locationObj = new AccompanyLocation(location.getLatitude(), location.getLongitude());
+            updateLocationRequest.location = locationObj;
 
-            JSONObject locationObject = new JSONObject();
-            locationObject.put("lat", location.getLatitude());
-            locationObject.put("long", location.getLongitude());
+            String data = new Gson().toJson(updateLocationRequest);
 
-            jsonObject.put("location", locationObject);
-
-            Message updateLocationMessage = new Message(jsonObject.toString());
+            Message updateLocationMessage = new Message(data);
             deviceClient.sendEventAsync(updateLocationMessage, null, null);
-        } catch (Exception e ){
+        } catch (Exception e) {
             Log.d(TAG, "Failed to send event. " + e.getMessage());
         }
     }
